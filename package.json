@@ -1,0 +1,27 @@
+{
+  "name": "flashweb",
+  "version": "1.0.0",
+  "description": "A Flashcard application. ",
+  "scripts": {
+    "start": "npm run compile && node server.js",
+    "compile": "bash compile.sh",
+    "transpile": "npx webpack --config ./webpack.config.js"
+  },
+  "keywords": [
+    "HTML",
+    "Node.js",
+    "website"
+  ],
+  "author": "Ashton Morris",
+  "license": "MIT",
+  "dependencies": {
+    "1car.us": "^0.0.7",
+    "chamoy": "^0.0.2"
+  },
+  "devDependencies": {
+    "glob": "^10.3.10",
+    "typescript": "^5.2.2",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^5.1.4"
+  }
+}

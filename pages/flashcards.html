@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flashcard App</title>
+    <link rel="stylesheet" href="/public/style.css" />
+    <link rel="stylesheet" href="../components/cards.css" />
+  </head>
+  <body>
+    <header class="toolbar">
+      <section class="left">
+        <header-component class="header-component"></header-component>
+      </section>
+
+      <!-- <section class="right">
+        <ul>
+          <li><a href="#"">Account</a></li>
+          <li><a href="#">Logout</a></li>
+        </ul>
+      </section> -->
+    </header>
+
+    <div id="flashcard-container">
+      <card-list cards="[]" class="card-list"></card-list>
+    </div>
+
+    <script type="module" src="/public/main.js"></script>
+
+    <script>
+      const card_list = document.querySelector(".card-list");
+
+      const navbar = document.querySelector(".header-component");
+
+      navbar.setAttribute("add_flashcard", createFlashcard);
+
+      window.globalState = {
+        cards: [],
+        current_card_id: null,
+      };
+
+      function setState(state) {
+        window.globalState = {
+          ...window.globalState,
+          ...state,
+        };
+      }
+
+      function createFlashcard() {
+        const card = {
+          id: String(window.globalState.cards.length),
+          key: String(window.globalState.cards.length),
+          front: "front side",
+          back: "back side",
+        };
+
+        const cards = [...window.globalState.cards, card];
+
+        setState({ cards });
+
+        card_list.setAttribute("cards", JSON.stringify(cards));
+      }
+
+      function deleteFlashcard(cardId) {
+        window.globalState.cards = window.globalState.cards.filter(
+          (card) => card.id !== cardId
+        );
+
+        if (!window.globalState.cards.length) {
+          card_list.setAttribute("cards", null);
+        }
+
+        card_list.setAttribute(
+          "cards",
+          JSON.stringify(window.globalState.cards)
+        );
+      }
+
+      function editCardContent(element, cardId, isFront, callback) {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = element.textContent.trim();
+
+        input.addEventListener("keypress", function (event) {
+          if (event.key === "Enter") {
+            element.textContent = input.value;
+            input.parentNode.replaceChild(element, input);
+            updateCardState(cardId, isFront, input.value, callback);
+          }
+        });
+
+        input.addEventListener("blur", function () {
+          element.textContent = input.value;
+          input.parentNode.replaceChild(element, input);
+          updateCardState(cardId, isFront, input.value, callback);
+        });
+
+        element.parentNode.replaceChild(input, element);
+        input.focus();
+      }
+
+      function updateCardState(cardId, isFront, newValue, callback) {
+        const updatedCards = window.globalState.cards.map((card) =>
+          card.id === cardId
+            ? {
+                ...card,
+                front: isFront ? newValue : card.front,
+                back: isFront ? card.back : newValue,
+              }
+            : card
+        );
+
+        callback && callback(updatedCards);
+      }
+    </script>
+  </body>
+</html>

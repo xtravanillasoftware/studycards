@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlashWeb - Flashcard App</title>
+    <link rel="stylesheet" href="public/style.css" />
+  </head>
+  <body>
+    <section class="application">
+      <header class="toolbar">
+        <section class="left">
+          <header-component class="header-component"></header-component>
+        </section>
+
+        <!-- <section class="right">
+          <ul>
+            <li><a href="#">Account</a></li>
+            <li><a href="#">Logout</a></li>
+          </ul>
+        </section> -->
+      </header>
+
+      <main class="deck-container">
+        <deck-list class="deck-list" id="deck-list" decks="[]"></deck-list>
+      </main>
+    </section>
+
+    <!-- Modal -->
+    <icarus-modal
+      class="icarus-modal"
+      open="false"
+      mode="rename_deck"
+    ></icarus-modal>
+
+    <script type="module" src="/public/main.js"></script>
+
+    <script>
+      const modal = document.querySelector(".icarus-modal");
+      const deck_list = document.querySelector(".deck-list");
+      let currentDeck;
+      let decks = [];
+      window.globalState = {
+        decks: [],
+        current_deck_id: null,
+        callback: null,
+      };
+
+      function openModal(action, deckId, callback) {
+        modal.setAttribute("open", true);
+        modal.setAttribute("mode", action);
+        setState({
+          current_deck_id: deckId,
+          callback,
+        });
+      }
+
+      function setState(state) {
+        window.globalState = {
+          ...window.globalState,
+          ...state,
+        };
+      }
+
+      function removeById(deckId) {
+        window.globalState.decks = window.globalState.decks.filter(
+          (deck) => deck.id !== deckId
+        );
+        if (window.globalState.current_deck_id === deckId) {
+          window.globalState.current_deck_id = null;
+        }
+      }
+
+      function closeModal() {
+        modal.setAttribute("open", "false");
+      }
+
+      // Function to replace the "Search" button with the search bar
+      function replaceWithSearchBar() {
+        const searchBar = document.getElementById("searchBar");
+        const searchButton = document.getElementById("searchButton");
+        searchBar.style.display = "flex";
+        searchButton.style.display = "none";
+      }
+
+      // Function to handle search
+      function search() {
+        // Implement search functionality here
+        const searchInput = document.getElementById("searchInput").value;
+        console.log("Searching for:", searchInput);
+      }
+
+      // Function to hide the search bar and show the "Search" button again
+      function hideSearchBar() {
+        const searchBar = document.getElementById("searchBar");
+        const searchButton = document.getElementById("searchButton");
+
+        searchBar.style.display = "none";
+        searchButton.style.display = "inline-block";
+      }
+
+      function createDeck(deckName) {
+        const deck = {
+          id: deckName,
+          title: deckName,
+          cards: [],
+          count: 0,
+          new: 0,
+          learn: 0,
+          due: 0,
+        };
+
+        globalState.decks = [...globalState.decks, deck];
+
+        deck_list.setAttribute("decks", JSON.stringify(globalState.decks));
+
+        if (window.globalState.callback) window.globalState.callback(deck);
+      }
+
+      function deleteDeck(deckId, callback) {
+        const deck = findDeckElementByDeckId(deckId);
+        removeById(deckId);
+        deck.remove();
+        callback && callback(deckId);
+      }
+
+      function findDeckElementByDeckName(deckName) {
+        const decksContainer = document.getElementById("deck-list");
+        const deck = [...decksContainer.shadowRoot.querySelectorAll("p")]
+          .find((element) => element.innerText === deckName)
+          .closest(".deck");
+        return deck;
+      }
+
+      function findDeckElementByDeckId(deckId) {
+        const decksContainer = document.getElementById("deck-list");
+        const element = decksContainer.shadowRoot.getElementById(deckId);
+        return element;
+      }
+
+      function renameDeck(newName, callback) {
+        const deck = findDeckElementByDeckId(
+          window.globalState.current_deck_id
+        );
+        const text = deck.querySelector(".title-link");
+        const renameBtn = deck.querySelector("#rename");
+        const deleteBtn = deck.querySelector("#delete");
+
+        if (text) {
+          text.textContent = newName;
+        }
+
+        const updatedDecks = window.globalState.decks.map((deck) =>
+          deck.id === window.globalState.current_deck_id
+            ? { ...deck, title: newName }
+            : deck
+        );
+
+        const currentDeck = updatedDecks.find(
+          (deck) => deck.id === window.globalState.current_deck_id
+        );
+
+        setState({
+          decks: updatedDecks,
+        });
+
+        if (window.globalState.callback)
+          window.globalState.callback(currentDeck);
+
+        setState({
+          callback: null,
+        });
+      }
+
+      // Function to handle form submission
+      function handleFormSubmission(event, mode) {
+        if (event) {
+          if (mode === "rename_deck") {
+            renameDeck(event);
+          } else {
+            createDeck(event);
+          }
+          closeModal();
+          // resetForm();
+        }
+      }
+
+      function resetForm() {
+        document.getElementById("deckForm").reset();
+      }
+
+      function showStats() {
+        alert("Showing stats...");
+      }
+
+      function navigateToFlashcards() {
+        window.location.href = "/pages/flashcards.html";
+      }
+    </script>
+  </body>
+</html>
